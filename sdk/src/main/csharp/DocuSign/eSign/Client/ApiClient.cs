@@ -499,5 +499,66 @@ namespace DocuSign.eSign.Client
                 return filename;
             }
         }
+
+        public string GetAuthorizationUri(string clientId, string redirectURI, Boolean isSandbox)
+        {
+            return this.GetAuthorizationUri(clientId, redirectURI, isSandbox, null);
+        }
+
+        public string GetAuthorizationUri(string clientId, string redirectURI, Boolean isSandbox, string state)
+        {
+            string DocuSignOAuthHost = isSandbox ? "account-d.docusign.com" : "account.docusign.com";
+            string format = "https://{0}/oauth/auth?response_type=code&scope=all&client_id={1}&redirect_uri={2}";
+            if (state != null)
+            {
+                format += "&state ={3}";
+            }
+            return string.Format(format, DocuSignOAuthHost, clientId, redirectURI, state);
+        }
+
+        public string GetOAuthToken(string clientId, string clientSecret, Boolean isSandbox, string accessCode)
+        {
+            // The Authentication is completed, so now echange a code returned for
+            // the access_token and refresh_token.
+            var webClient = new WebClient();
+
+            webClient.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
+
+            // Add the Authorization header with client_id and client_secret as base64
+            string codeAuth = clientId + ":" + clientSecret;
+            byte[] codeAuthBytes = Encoding.UTF8.GetBytes(codeAuth);
+            string codeAuthBase64 = Convert.ToBase64String(codeAuthBytes);
+            webClient.Headers.Add("Authorization", "Basic " + codeAuthBase64);
+
+            // Add the code returned from the authentication site
+            string tokenGrantAndCode = string.Format("grant_type=authorization_code&code={0}", accessCode);
+
+            // Call the token endpoint to exchange the code for an access_token
+            string DocuSignOAuthHost = isSandbox ? "account-d.docusign.com" : "account.docusign.com";
+            string tokenEndpoint = string.Format("https://{0}/oauth/token", DocuSignOAuthHost);
+            string tokenResponse = webClient.UploadString(tokenEndpoint, tokenGrantAndCode);
+            TokenResponse tokenObj = JsonConvert.DeserializeObject<TokenResponse>(tokenResponse);
+
+            // Add the token to this ApiClient
+            string authHeader = "Bearer " + tokenObj.access_token;
+            this.Configuration.AddDefaultHeader("Authorization", authHeader);
+
+            return tokenObj.access_token;
+        }
     }
+
+    // response object from the OAuth token endpoint. This is used
+    // to obtain access_tokens for making API calls and refresh_tokens for getting a new
+    // access token after a token expires.
+    public class TokenResponse
+    {
+        public string access_token { get; set; }
+
+        public string token_type { get; set; }
+
+        public string refresh_token { get; set; }
+
+        public int? expires_in { get; set; }
+    }
+
 }

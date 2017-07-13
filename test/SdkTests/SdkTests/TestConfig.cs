@@ -13,6 +13,10 @@ namespace SdkTests
         public const string Password = "qweqweasd";
         public const string IntegratorKey = "SAND-7c8746af-7f4d-4dbb-bf53-fc10861ef45b";
         public const string BaseUrl = "https://demo.docusign.net/restapi";
+        public const string ClientId = "ae30ea4e-3959-4d1c-b867-fcb57d2dc4df";
+        public const string ClientSecret = "b4dccdbe-232f-46cc-96c5-b2f0f7448f8f";
+        public const string RedirectUrl = "http://localhost:3000/auth/callback";
+        public const string StateOptional = "testState";
 
         public const string SignTest1File = @".../../docs/SignTest1.pdf";
 

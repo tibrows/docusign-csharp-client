@@ -82,8 +82,6 @@ Z:\private\tmp\docusign-csharp-client\test\SdkTests\SdkTests\bin\Debug\System.Ne
 Z:\private\tmp\docusign-csharp-client\test\SdkTests\SdkTests\bin\Debug\System.Web.Http.dll
 Z:\private\tmp\docusign-csharp-client\test\SdkTests\SdkTests\bin\Debug\System.Web.Http.Owin.dll
 Z:\private\tmp\docusign-csharp-client\test\SdkTests\SdkTests\bin\Debug\System.Web.Http.WebHost.dll
-Z:\private\tmp\docusign-csharp-client\test\SdkTests\SdkTests\bin\Debug\DocuSign.eSign.pdb
-Z:\private\tmp\docusign-csharp-client\test\SdkTests\SdkTests\bin\Debug\DocuSign.eSign.xml
 Z:\private\tmp\docusign-csharp-client\test\SdkTests\SdkTests\bin\Debug\Microsoft.Owin.xml
 Z:\private\tmp\docusign-csharp-client\test\SdkTests\SdkTests\bin\Debug\Microsoft.Owin.Diagnostics.xml
 Z:\private\tmp\docusign-csharp-client\test\SdkTests\SdkTests\bin\Debug\Microsoft.Owin.Host.HttpListener.xml

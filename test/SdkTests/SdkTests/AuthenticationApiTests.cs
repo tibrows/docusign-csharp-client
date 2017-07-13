@@ -39,5 +39,33 @@ namespace SdkTests
             Assert.IsNotNull(TestConfig.AccountId);
                 
         }
+
+        /*[TestMethod]
+        public void OAuthLoginTest()
+        {
+            // configure the ApiClient for the DocuSign site and authentictaion needed.
+            Utils.ConfigureOAuthApiClient();
+
+            AuthenticationApi authApi = new AuthenticationApi();
+
+            AuthenticationApi.LoginOptions options = new AuthenticationApi.LoginOptions();
+            options.apiPassword = "true";
+            options.includeAccountIdGuid = "true";
+            LoginInformation loginInfo = authApi.Login(options);
+
+            Assert.IsNotNull(loginInfo.LoginAccounts);
+
+            // find the default account for this user
+            foreach (LoginAccount loginAcct in loginInfo.LoginAccounts)
+            {
+                if (loginAcct.IsDefault == "true")
+                {
+                    TestConfig.AccountId = loginAcct.AccountId;
+                    break;
+                }
+            }
+            Assert.IsNotNull(TestConfig.AccountId);
+
+        }*/
     }
 }

@@ -112,6 +112,103 @@ To send a signature request from a template:
 	}
 ```
 
+
+To use 3-legged OAuth:
+```csharp
+    class TestConfig
+    {
+        ublic const string BaseUrl = "https://demo.docusign.net/restapi";
+        public const string ClientId = "[CLIENTID]";
+        public const string ClientSecret = "[CLIENTSECRET]";
+        public const string RedirectUrl = "http://localhost:3000/auth/callback";
+        public const string StateOptional = "testState";
+    }
+    
+
+    public class Utils
+    {
+        // This will be returned to the test via the callback url after the
+        // user authenticates via the browser.
+        public static string AccessCode { get; internal set; }
+
+        // This will be filled in with the access_token retrieved from the token endpoint using the code above.
+        // This is the Bearer token that will be used to make API calls.
+        public static string AccessToken { get; set; }
+        public static string StateValue { get; internal set; }
+
+        // This event handle is used to block the self-hosted Web service in the test
+        // until the OAuth login is completed.
+        public static ManualResetEvent WaitForCallbackEvent = new ManualResetEvent(false);
+
+        internal static void ConfigureOAuthApiClient()
+        {
+
+            // Make an API call with the token
+            ApiClient apiClient = new ApiClient(TestConfig.BaseUrl);
+            Configuration.Default.ApiClient = apiClient;
+
+            // Initiate the browser session to the Authentication server
+            // so the user can login.
+            string accountServerAuthUrl = apiClient.GetAuthorizationUri(TestConfig.ClientId, TestConfig.RedirectUrl, true, TestConfig.StateOptional);
+            System.Diagnostics.Process.Start(accountServerAuthUrl);
+
+            // Launch a self-hosted web server to accepte the redirect_url call
+            // after the user finishes authentication.
+            using (WebApp.Start<Startup>("http://localhost:3000"))
+            {
+                // This waits for the redirect_url to be received in the REST controller
+                // (see classes below) and then sleeps a short time to allow the response
+                // to be returned to the web browser before the server session ends.
+                WaitForCallbackEvent.WaitOne(60000, false);
+                Thread.Sleep(1000);
+            }
+
+            string accessToken = apiClient.GetOAuthToken(TestConfig.ClientId, TestConfig.ClientSecret, true, AccessCode);
+        }    
+    }
+    
+    // Configuration for self-hosted Web service. THis allows the test to call out to the
+    // Account Server endponts and have the resulting browser login session redirect
+    // directly into this test.
+    public class Startup
+    {
+        public void Configuration(IAppBuilder app)
+        {
+            // Configure Web API for self-host. 
+            var config = new HttpConfiguration();
+            config.Routes.MapHttpRoute(
+                name: "DefaultApi",
+                routeTemplate: "auth/{controller}",
+                defaults: new { controller = "callback", id = RouteParameter.Optional }
+            );
+
+            app.UseWebApi(config);
+        }
+    }
+    
+
+    // API Controller and action called via the redirect_url registered for thie client_id
+    public class callbackController : ApiController
+    {
+        // GET auth/callback 
+        public HttpResponseMessage Get()
+        {
+            Utils.AccessCode = Request.RequestUri.ParseQueryString()["code"];
+
+            // state is app-specific string that may be passed around for validation.
+            Utils.StateValue = Request.RequestUri.ParseQueryString()["state"];
+
+            HttpResponseMessage response = new HttpResponseMessage();
+            response.Content = new StringContent("Redirect Completed");
+            response.StatusCode = HttpStatusCode.OK;
+
+            // Signal the main test that the response has been received.
+            Utils.WaitForCallbackEvent.Set();
+            return response;
+        }
+    }
+```
+
 See [CoreRecipes.cs](https://github.com/docusign/docusign-csharp-client/blob/master/test/Recipes/CoreRecipes.cs) for more examples.
 
 # Authentication
